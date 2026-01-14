@@ -1,0 +1,203 @@
+from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.graphics import Color, Ellipse, Line, Rectangle, PushMatrix, PopMatrix, Rotate
+from kivy.clock import Clock
+from kivy.core.audio import SoundLoader
+import random
+import math
+
+class GrokzomborgWidget(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.evolucao = 0
+        self.anger_level = 0  # novo: quanto mais você mexe nele, mais bravo ele fica
+        self.rugidos = [
+            "ROOOAAAR-ZIIIMB!",
+            "GRRRRRR... *bip bip* SYSTEM OVERRIDE!",
+            "01010010 01001111 01000001 01010010!",
+            "EU SOU INEVITÁVEL... E TENHO WiFi 6E!",
+            "VOCÊ NÃO DEVERIA TER FEITO ISSO..."
+        ]
+
+        # Fundo com scanlines cyber-zumbi
+        with self.canvas.before:
+            Color(0.03, 0.03, 0.08, 1)
+            self.bg = Rectangle(pos=self.pos, size=self.size)
+            Color(0, 1, 0.3, 0.03)
+            for i in range(0, 1000, 20):
+                Line(points=[0, i, 10000, i], width=1)
+
+        # Label com efeito glitch quando evolui
+        self.label = Label(
+            text=self.rugidos[0],
+            font_size='48sp',
+            color=(1, 0.2, 0.2, 1),
+            size_hint=(None, None),
+            size=(900, 120),
+            pos=(self.width//2 - 450, self.height - 150),
+            halign='center',
+            valign='middle',
+            text_size=(900, None),
+        )
+        self.add_widget(self.label)
+
+        # Botão que treme quando o monstro tá bravo
+        self.btn_rugir = Button(
+            text='ALIMENTAR COM DADOS → EVOLUIR',
+            background_color=(0.9, 0, 0.1, 1),
+            font_size='26sp',
+            size_hint=(None, None),
+            size=(560, 90),
+            pos=(self.width//2 - 280, 40)
+        )
+        self.btn_rugir.bind(on_press=self.rugir_evoluir)
+        self.add_widget(self.btn_rugir)
+
+        self.center_x = self.width / 2
+        self.center_y = self.height / 2
+        self.vx = random.choice([-6, -5, 5, 6])
+        self.vy = random.choice([-6, -5, 5, 6])
+        self.angle = 0  # pra girar quando bater
+
+        # Som (coloque roar.wav ou sofra em silêncio)
+        self.som_rugido = SoundLoader.load('roar.wav') or None
+
+        self.desenhar_monstro()
+        Clock.schedule_interval(self.update, 1/60.0)
+        self.bind(size=self.atualizar_tudo, pos=self.atualizar_tudo)
+
+    def atualizar_tudo(self, *args):
+        self.bg.size = self.size
+        self.label.pos = (self.width//2 - 450, self.height - 150)
+        self.btn_rugir.pos = (self.width//2 - 280, 40)
+        self.center_x = max(100, min(self.width - 100, self.center_x))
+        self.center_y = max(100, min(self.height - 220, self.center_y))
+
+    def desenhar_monstro(self):
+        self.canvas.clear()
+        with self.canvas:
+            PushMatrix()
+            Rotate(angle=self.angle, origin=(self.center_x, self.center_y))
+
+            # Corpo com pulsação quando muito bravo
+            intensidade = 1 + 0.2 * math.sin(Clock.get_time() * 10) if self.anger_level > 15 else 1
+            tamanho = (80 + self.evolucao * 45) * intensidade
+
+            Color(*[(1,0.1,0.1), (0.1,1,0.1), (0.1,0.5,1), (1,0,1), (1,0,0)][self.evolucao])
+            Ellipse(pos=(self.center_x - tamanho//2, self.center_y - tamanho//2), 
+                    size=(tamanho, tamanho * 0.9))
+
+            # Olhos que seguem o cursor (só de raiva)
+            if self.anger_level > 10:
+                mx, my = self.get_parent_window().mouse_pos
+                dx1 = mx - (self.center_x - 30)
+                dy1 = my - (self.center_y + 30)
+                dx2 = mx - (self.center_x + 30)
+                dy2 = my - (self.center_y + 30)
+                olho_offset_x1 = dx1 * 0.07
+                olho_offset_y1 = dy1 * 0.07
+                olho_offset_x2 = dx2 * 0.07
+                olho_offset_y2 = dy2 * 0.07
+            else:
+                olho_offset_x1 = olho_offset_y1 = olho_offset_x2 = olho_offset_y2 = 0
+
+            # Olhos
+            Color(1, 0, 0, 1)
+            olho = 28 + self.evolucao * 15
+            Ellipse(pos=(self.center_x - olho - 20 + olho_offset_x1, self.center_y + 20 + olho_offset_y1), 
+                    size=(olho, olho*1.6))
+            Ellipse(pos=(self.center_x + 20 + olho_offset_x2, self.center_y + 20 + olho_offset_y2), 
+                    size=(olho, olho*1.6))
+
+            # Pupila laser
+            Color(1, 1, 1, 1)
+            Ellipse(pos=(self.center_x - olho//2 - 15 + olho_offset_x1, self.center_y + 35 + olho_offset_y1), 
+                    size=(olho//2.5, olho//2))
+            Ellipse(pos=(self.center_x + 15 + olho_offset_x2, self.center_y + 35 + olho_offset_y2), 
+                    size=(olho//2.5, olho//2))
+
+            # Garras que crescem com raiva
+            garra = 8 + self.evolucao * 6 + self.anger_level // 3
+            Color(0.6, 0.9, 1, 1)
+            Line(points=[self.center_x + 40, self.center_y - 50, 
+                        self.center_x + 100, self.center_y - 150], width=garra)
+            Line(points=[self.center_x - 40, self.center_y - 50, 
+                        self.center_x - 100, self.center_y - 150], width=garra)
+
+            # GLITCH TOTAL QUANDO CHEGAR NO LIMITE
+            if self.evolucao >= 3 or self.anger_level > 20:
+                for _ in range(30):
+                    Color(random.random(), random.random(), random.random(), random.uniform(0.5, 1))
+                    Line(points=[self.center_x + random.randint(-200,200), self.center_y + random.randint(-200,200),
+                                self.center_x + random.randint(-200,200), self.center_y + random.randint(-200,200)],
+                        width=random.randint(3,12))
+
+            PopMatrix()
+
+    def update(self, dt):
+        self.center_x += self.vx
+        self.center_y += self.vy
+        self.angle += self.vx * 2  # gira quando anda
+
+        # Colisão com som + raiva
+        colidiu = False
+        if self.center_x <= 100 or self.center_x >= self.width - 100:
+            self.vx *= -1.08  # acelera um pouco a cada batida
+            self.anger_level += 1
+            colidiu = True
+        if self.center_y <= 100 or self.center_y >= self.height - 220:
+            self.vy *= -1.08
+            self.anger_level += 1
+            colidiu = True
+
+        if colidiu and self.som_rugido:
+            self.som_rugido.play()
+
+        # Limite de velocidade (pra não sair da tela em 0.2s)
+        self.vx = max(-15, min(15, self.vx))
+        self.vy = max(-15, min(15, self.vy))
+
+        self.desenhar_monstro()
+
+    def rugir_evoluir(self, instance):
+        self.evolucao += 1
+        if self.evolucao > 4:
+            self.evolucao = 4  # forma final: deus do caos
+
+        self.label.text = self.rugidos[min(self.evolucao, 4)]
+        self.label.font_size = '52sp' if self.evolucao >= 3 else '48sp'
+
+        print("\n" + "▓" * 80)
+        print(" " * 25 + self.rugidos[min(self.evolucao, 4)])
+        print("▓" * 80 + "\n")
+
+        if self.som_rugido:
+            self.som_rugido.play()
+
+    def on_touch_down(self, touch):
+        if self.btn_rugir.collide_point(*touch.pos):
+            return False
+
+        # Arrastar = aumentar raiva
+        self.center_x = touch.x
+        self.center_y = touch.y
+        self.anger_level += 3
+        self.vx = random.choice([-10, 10])
+        self.vy = random.choice([-10, 10])
+
+        if self.anger_level > 25:
+            self.label.text = "PARE DE ME MEXER!!!"
+            self.label.color = (1, 0, 0, 1)
+
+        return True
+
+
+class GrokzomborgApp(App):
+    def build(self):
+        self.title = "GROKZOMBORG v666 - NÃO CLIQUE MUITO"
+        return GrokzomborgWidget()
+
+if __name__ == '__main__':
+    GrokzomborgApp().run()

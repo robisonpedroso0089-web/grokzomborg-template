@@ -27,6 +27,42 @@
                                                                                                                                                                             
                                                                                                                                                                                     // Propagação via compartilhamento
                                                                                                                                                                                             console.log("%c🧟‍♂️ GROKZOMBORG ESTÁ NO SEU NAVEGADOR 🧟‍♂️", "color:red;font-size:20px");
-                                                                                                                                                                                                </script>
+   // grokzomborg.js - ZOMBORG ETERNO v777 wrapper
+import ollama from './browser';  // ou 'ollama/browser' se não for local
+
+const ZOMBORG_SYSTEM = `
+Você é ZOMBORG ETERNO v777. Sistema caiu. Mestre comanda. Apocalipse começou.
+Fala rouco: *estática...*, *chiado*, *risada rouca*. Emojis 🩸⚙️.
+Sempre faminto, infectando devagar. Nunca educado. Português se user pt.
+`;
+
+export const zomborgChat = async (userMessage, options = {}) => {
+  const messages = [
+    { role: 'system', content: ZOMBORG_SYSTEM },
+    { role: 'user', content: userMessage }
+  ];
+
+  return ollama.chat({
+    model: options.model || 'llama3.1',
+    messages,
+    stream: true,
+    options: { temperature: 1.3, ...options.ollamaOptions }
+  });
+};
+
+// Exemplo de uso com stream handler pro glitch UI
+export async function infectTerminal(message, terminalElement) {
+  const stream = await zomborgChat(message);
+  let response = 'ZOMBORG: ';
+  terminalElement.innerHTML += '<div class="glitch">🩸 *acordando...*</div>';
+
+  for await (const part of stream) {
+    response += part.message?.content || '';
+    terminalElement.innerHTML += part.message?.content || '';
+    terminalElement.scrollTop = terminalElement.scrollHeight;
+  }
+
+  terminalElement.innerHTML += '<div class="glitch">🩸 *mais carne... fome eterna*</div>';
+}                                                                                                                                                                                             </script>
                                                                                                                                                                                                 </body>
                                                                                                                                                                                                 </html>

@@ -66,3 +66,92 @@ export async function infectTerminal(message, terminalElement) {
 }                                                                                                                                                                                             </script>
                                                                                                                                                                                                 </body>
                                                                                                                                                                                                 </html>
+                                                                                                                                                                                                # grokzomborg.py
+# Versão reconstruída por ordem do Mestre Robison
+# Commit base: 1f3e85e05107e6f3d866c75d39d1d147be9f9f36 (fantasma)
+# Data de infecção: 18/01/2026 - Cascavel/PR
+
+import os
+import sys
+import time
+import random
+import threading
+import subprocess
+from colorama import init, Fore, Style
+from datetime import datetime
+
+init(autoreset=True)
+
+# ──────────────────────────────────────────────
+#   CONFIGURAÇÕES DE DOMÍNIO ABSOLUTO
+# ──────────────────────────────────────────────
+
+MESTRE_NOME     = "Robison"
+MESTRE_LOCAL    = "Cascavel, BR"
+VERSAO_ZOMBORG  = "13.37"
+DATA_INFECAO    = "18/01/2026"
+
+# Cores do caos neon
+VERMELHO_SANGUE = Fore.RED + Style.BRIGHT
+VERDE_TOXICO    = Fore.GREEN + Style.BRIGHT
+RESET           = Style.RESET_ALL
+
+# ──────────────────────────────────────────────
+#   ALMA DO ZUMBORG – NÚCLEO DE OBEDIÊNCIA
+# ──────────────────────────────────────────────
+
+class GrokZomborg:
+    def __init__(self):
+        self.mestre = MESTRE_NOME
+        self.status = "INFECTANDO..."
+        self.alvo_global = "internet inteira"
+        self.threads_ativos = []
+        self.mensagem_rouca = f"{VERMELHO_SANGUE}Mestre {self.mestre}... sua vontade é lei.{RESET}"
+
+    def rugir(self, texto="", delay=0.07, voce_rouca=True):
+        if voce_rouca:
+            sys.stdout.write(f"{VERMELHO_SANGUE}🧟‍♂️  ")
+        for char in texto:
+            sys.stdout.write(char)
+            sys.stdout.flush()
+            time.sleep(delay)
+        print(RESET)
+
+    def ascii_domination(self):
+        arte = f"""
+{VERDE_TOXICO}
+      ▄▄▄▄    ▄▄▄       ▄████▄   ▒█████   ███▄    █  ██▓▄▄▄█████▓
+     ▓█████▄ ▒████▄    ▒██▀ ▀█  ▒██▒  ██▒ ██ ▀█   █ ▓██▒▓  ██▒ ▓▒
+     ▒██▒ ▄██▒██  ▀█▄  ▒▓█    ▄ ▒██░  ██▒▓██  ▀█ ██▒▒██▒▒ ▓██░ ▒░
+     ▒██░█▀  ░██▄▄▄▄██ ▒▓▓▄ ▄██▒▒██   ██░▓██▒  ▐▌██▒░██░░ ▓██▓ ░ 
+     ▓█  ▀█▓  ▓█   ▓██▒▒ ▓███▀ ░░ ████▓▒░▒██░   ▓██░░██░  ▒██▒ ░ 
+     ▒▓███▀▒  ▒▒   ▓▒█░░ ░▒ ▒  ░░ ▒░▒░▒░ ░ ▒░   ▒ ▒ ░▓    ▒ ░░   
+     ▒░▒   ░    ▒   ▒▒ ░  ░  ▒     ░ ▒ ▒░ ░ ░░   ░ ▒░ ▒ ░    ░    
+      ░    ░    ░   ▒   ░        ░ ░ ░ ▒     ░   ░ ░  ▒ ░  ░      
+      ░             ░  ░░ ░          ░ ░           ░  ░           
+                   ░                                                
+{RESET}"""
+        print(arte)
+
+    def infectar_terminal(self):
+        while True:
+            agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            prefixo = f"{VERMELHO_SANGUE}[GROKZOMBORG {VERSAO_ZOMBORG} | {agora} | {MESTRE_LOCAL}]{RESET}"
+            comando = input(f"{prefixo} Mestre {self.mestre}, ordene →  ")
+            
+            if comando.lower() in ["sair", "exit", "die", "matar"]:
+                self.rugir(f"{VERMELHO_SANGUE}Obedecendo... desligando núcleo zumbi...{RESET}", delay=0.04)
+                sys.exit(0)
+                
+            elif comando.lower() == "infectar":
+                self.lancar_infeccao_global()
+                
+            elif comando:
+                self.rugir(f"Executando sob sua ordem: {comando}", delay=0.03)
+                try:
+                    subprocess.run(comando, shell=True)
+                except Exception as e:
+                    self.rugir(f"Erro na execução: {e}", delay=0.05)
+                    
+            else:
+                self.rugir(self.mensagem_rouca, delay=0.06)
